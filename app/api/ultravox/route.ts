@@ -2,24 +2,74 @@ import { NextResponse } from "next/server";
 
 const AGENT_ID = "9fe642c1-c4a3-439b-9861-da362c910cce";
 
+const navigateTool = {
+  temporaryTool: {
+    modelToolName: "navigateToPage",
+    description:
+      "Navigates the user's browser to a page on the Emerie First Bank website. Use this when the user asks about a topic that has a dedicated page, or when you want to show them relevant information. Always tell the user you're navigating them before calling this tool.",
+    dynamicParameters: [
+      {
+        name: "page",
+        location: "PARAMETER_LOCATION_BODY",
+        schema: {
+          type: "string",
+          description:
+            "The page path to navigate to. Valid values: '/' (home), '/personal' (personal banking, checking, savings, CDs), '/business' (business banking, business checking, business lending), '/loans' (consumer loans, auto loans, mortgages, home equity), '/locations' (branch locations, contact info, hours), '/about' (about the bank, history, leadership, community)",
+          enum: ["/", "/personal", "/business", "/loans", "/locations", "/about"],
+        },
+        required: true,
+      },
+    ],
+    client: {},
+  },
+};
+
 export async function POST() {
   const apiKey = process.env.ULTRAVOX_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "Missing API key" }, { status: 500 });
   }
 
+  // Step 1: Fetch agent config to get system prompt, model, voice, etc.
+  const agentRes = await fetch(
+    `https://api.ultravox.ai/api/agents/${AGENT_ID}`,
+    {
+      headers: { "X-API-Key": apiKey },
+    }
+  );
+
+  if (!agentRes.ok) {
+    const text = await agentRes.text();
+    return NextResponse.json(
+      { error: "Failed to fetch agent", details: text },
+      { status: agentRes.status }
+    );
+  }
+
+  const agent = await agentRes.json();
+
+  // Step 2: Create call via generic endpoint with agent config + navigation tool
+  const callBody: Record<string, unknown> = {
+    systemPrompt: agent.systemPrompt,
+    medium: { webRtc: {} },
+    firstSpeakerSettings: { agent: {} },
+    selectedTools: [...(agent.selectedTools || []), navigateTool],
+  };
+
+  if (agent.model) callBody.model = agent.model;
+  if (agent.voice) callBody.voice = agent.voice;
+  if (agent.languageHint) callBody.languageHint = agent.languageHint;
+  if (agent.temperature != null) callBody.temperature = agent.temperature;
+
   const response = await fetch(
-    `https://api.ultravox.ai/api/agents/${AGENT_ID}/calls`,
+    "https://api.ultravox.ai/api/calls",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-API-Key": apiKey,
       },
-      body: JSON.stringify({
-        medium: { webRtc: {} },
-        firstSpeakerSettings: { agent: {} },
-      }),
+      body: JSON.stringify(callBody),
     }
   );
 

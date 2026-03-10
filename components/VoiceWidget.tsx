@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type SessionStatus =
   | "disconnected"
@@ -18,7 +19,10 @@ interface Transcript {
   medium: "voice" | "text";
 }
 
+const VALID_PAGES = ["/", "/personal", "/business", "/loans", "/locations", "/about"];
+
 export default function VoiceWidget() {
+  const router = useRouter();
   const [status, setStatus] = useState<SessionStatus>("disconnected");
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +54,19 @@ export default function VoiceWidget() {
       const { UltravoxSession } = await import("ultravox-client");
       const session = new UltravoxSession();
       sessionRef.current = session;
+
+      // Register client tool for page navigation
+      session.registerToolImplementation(
+        "navigateToPage",
+        (params: { page?: string }) => {
+          const page = params.page || "/";
+          if (VALID_PAGES.includes(page)) {
+            router.push(page);
+            return `Navigated to ${page}`;
+          }
+          return `Invalid page: ${page}`;
+        }
+      );
 
       session.addEventListener("status", () => {
         setStatus(session.status as SessionStatus);
