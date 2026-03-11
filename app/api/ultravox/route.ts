@@ -47,19 +47,23 @@ export async function POST() {
   }
 
   const agent = await agentRes.json();
+  const tpl = agent.callTemplate || {};
 
   // Step 2: Create call via generic endpoint with agent config + navigation tool
   const callBody: Record<string, unknown> = {
-    systemPrompt: agent.systemPrompt,
+    systemPrompt: tpl.systemPrompt,
     medium: { webRtc: {} },
-    firstSpeakerSettings: { agent: {} },
-    selectedTools: [...(agent.selectedTools || []), navigateTool],
+    firstSpeakerSettings: tpl.firstSpeakerSettings || { agent: {} },
+    selectedTools: [...(tpl.selectedTools || []), navigateTool],
   };
 
-  if (agent.model) callBody.model = agent.model;
-  if (agent.voice) callBody.voice = agent.voice;
-  if (agent.languageHint) callBody.languageHint = agent.languageHint;
-  if (agent.temperature != null) callBody.temperature = agent.temperature;
+  if (tpl.model) callBody.model = tpl.model;
+  if (tpl.voice) callBody.voice = tpl.voice;
+  if (tpl.languageHint) callBody.languageHint = tpl.languageHint;
+  if (tpl.temperature != null) callBody.temperature = tpl.temperature;
+  if (tpl.maxDuration) callBody.maxDuration = tpl.maxDuration;
+  if (tpl.initialOutputMedium) callBody.initialOutputMedium = tpl.initialOutputMedium;
+  if (tpl.inactivityMessages) callBody.inactivityMessages = tpl.inactivityMessages;
 
   const response = await fetch(
     "https://api.ultravox.ai/api/calls",
