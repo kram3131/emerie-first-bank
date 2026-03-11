@@ -20,6 +20,9 @@ const quickLinks = [
 export default function Footer() {
   return (
     <footer className="bg-navy text-white/80">
+      {/* Gradient top accent */}
+      <div className="h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand column */}
@@ -29,7 +32,7 @@ export default function Footer() {
               alt="Emerie First Bank"
               width={180}
               height={40}
-              className="h-10 w-auto brightness-0 invert mb-4"
+              className="h-12 w-auto brightness-0 invert mb-6"
             />
             <p className="text-sm leading-relaxed text-white/60">
               Community-focused banking in Central Texas since 1987. Member FDIC.
@@ -43,7 +46,8 @@ export default function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
+              <span className="w-1 h-1 bg-gold rounded-full" />
               Quick Links
             </h3>
             <ul className="space-y-2.5">
@@ -51,7 +55,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/60 hover:text-gold transition-colors"
+                    className="text-sm text-white/60 hover:text-gold transition-colors hover:underline underline-offset-4 decoration-gold/30"
                   >
                     {link.label}
                   </Link>
@@ -62,7 +66,8 @@ export default function Footer() {
 
           {/* Branches */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
+              <span className="w-1 h-1 bg-gold rounded-full" />
               Our Branches
             </h3>
             <ul className="space-y-2.5">
@@ -78,7 +83,8 @@ export default function Footer() {
 
           {/* Contact & departments */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
+              <span className="w-1 h-1 bg-gold rounded-full" />
               Departments
             </h3>
             <ul className="space-y-2.5 text-sm text-white/60">
@@ -102,7 +108,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-white/10">
+        <div className="mt-14 pt-8">
+          <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/40">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-center">
               <span>&copy; {new Date().getFullYear()} Emerie First Bank</span>

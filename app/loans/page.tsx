@@ -1,5 +1,6 @@
 import Hero from "@/components/Hero";
 import SectionHeading from "@/components/SectionHeading";
+import AnimateOnScroll from "@/components/AnimateOnScroll";
 
 const consumerLoans = [
   {
@@ -184,164 +185,203 @@ export default function LoansPage() {
       />
 
       {/* Consumer Lending */}
-      <section className="py-20 md:py-24">
+      <section className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
+            variant="label"
+            label="Consumer Lending"
             title="Consumer Lending"
             subtitle="Fixed rates, local underwriting, and no hidden fees."
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {consumerLoans.map((loan) => (
-              <div key={loan.title} className="bg-white rounded-2xl border border-border p-6 flex flex-col">
-                <h3 className="text-base font-semibold text-navy mb-3">{loan.title}</h3>
-                <div className="mb-4 space-y-1">
-                  <div className="text-lg font-bold text-gold-dark">{loan.rate}</div>
-                  <div className="text-xs text-body-light">{loan.amount}</div>
-                  <div className="text-xs text-body-light">{loan.terms}</div>
+          <AnimateOnScroll animation="stagger-children">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {consumerLoans.map((loan, idx) => (
+                <div
+                  key={loan.title}
+                  className={`bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col ${
+                    idx === 0 ? "md:col-span-2 lg:col-span-1" : ""
+                  }`}
+                >
+                  <h3 className="text-base font-semibold text-navy mb-3">{loan.title}</h3>
+                  <div className="mb-4 space-y-1">
+                    <div className="text-lg font-light text-gold-dark">{loan.rate}</div>
+                    <div className="text-xs text-body-light">{loan.amount}</div>
+                    <div className="text-xs text-body-light">{loan.terms}</div>
+                  </div>
+                  <ul className="space-y-2 flex-1">
+                    {loan.details.map((detail, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-body">
+                        <span className="w-1.5 h-1.5 bg-gold rounded-full mt-1.5 flex-shrink-0" />
+                        {detail}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="space-y-2 flex-1">
-                  {loan.details.map((detail, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-body">
-                      <span className="w-1.5 h-1.5 bg-gold rounded-full mt-1.5 flex-shrink-0" />
-                      {detail}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </AnimateOnScroll>
         </div>
       </section>
 
       {/* Home Equity */}
-      <section className="py-20 md:py-24 bg-white">
+      <section className="py-20 md:py-28 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
+            variant="editorial"
             title="Home Equity Products"
             subtitle="Access the equity in your home for improvements, debt consolidation, or major expenses."
           />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {homeEquity.map((product) => (
-              <div key={product.title} className="bg-cream rounded-2xl border border-border p-8">
-                <h3 className="text-lg font-semibold text-navy mb-2">{product.title}</h3>
-                <div className="text-xl font-bold text-teal mb-4">{product.rate}</div>
-                <ul className="space-y-2">
-                  {product.details.map((detail, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-body">
-                      <svg className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {detail}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <AnimateOnScroll animation="stagger-children">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+              {homeEquity.map((product) => (
+                <div key={product.title} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-8">
+                  <h3 className="text-lg font-semibold text-navy mb-2">{product.title}</h3>
+                  <div className="text-xl font-light text-teal mb-4">{product.rate}</div>
+                  <ul className="space-y-2">
+                    {product.details.map((detail, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-body">
+                        <svg className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {detail}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </AnimateOnScroll>
         </div>
       </section>
 
       {/* Mortgage Products */}
-      <section className="py-20 md:py-24">
+      <section className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
+            variant="editorial"
             title="Mortgage Products"
             subtitle="Work with the same loan officer from application through closing. Rates as of March 2026."
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mortgageProducts.map((product) => (
-              <div key={product.title} className="bg-white rounded-2xl border border-border p-6 flex flex-col">
-                <h3 className="text-base font-semibold text-navy mb-3">{product.title}</h3>
-                <div className="mb-4 space-y-1">
-                  {product.rates.map((r) => (
-                    <div key={r.term} className="flex justify-between items-baseline">
-                      <span className="text-sm text-body">{r.term}</span>
-                      <span className="text-lg font-bold text-navy">{r.rate}</span>
-                    </div>
-                  ))}
-                </div>
-                <ul className="space-y-2 flex-1">
-                  {product.details.map((detail, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-body">
-                      <span className="w-1.5 h-1.5 bg-teal rounded-full mt-1.5 flex-shrink-0" />
-                      {detail}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Mortgage Process Timeline */}
-      <section className="py-20 md:py-24 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading
-            title="The Mortgage Process"
-            subtitle="Typical timeline: 30 to 45 days from application to closing."
-          />
-          <div className="max-w-4xl mx-auto">
+          <AnimateOnScroll animation="stagger-children">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mortgageSteps.map((item) => (
-                <div key={item.step} className="relative bg-cream rounded-2xl border border-border p-6">
-                  <div className="w-10 h-10 bg-navy text-white rounded-full flex items-center justify-center text-sm font-bold mb-3">
-                    {item.step}
+              {mortgageProducts.map((product) => (
+                <div key={product.title} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col">
+                  <h3 className="text-base font-semibold text-navy mb-3">{product.title}</h3>
+                  <div className="mb-4 space-y-1">
+                    {product.rates.map((r) => (
+                      <div key={r.term} className="flex justify-between items-baseline">
+                        <span className="text-sm text-body">{r.term}</span>
+                        <span className="text-lg font-light text-navy">{r.rate}</span>
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="text-base font-semibold text-navy mb-1">{item.title}</h3>
-                  <p className="text-sm text-body">{item.desc}</p>
+                  <ul className="space-y-2 flex-1">
+                    {product.details.map((detail, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-body">
+                        <span className="w-1.5 h-1.5 bg-teal rounded-full mt-1.5 flex-shrink-0" />
+                        {detail}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
-          </div>
+          </AnimateOnScroll>
+        </div>
+      </section>
+
+      {/* Mortgage Process Timeline — horizontal connected dots on desktop */}
+      <section className="py-20 md:py-28 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading
+            variant="minimal"
+            title="The Mortgage Process"
+            subtitle="Typical timeline: 30 to 45 days from application to closing."
+          />
+          <AnimateOnScroll animation="reveal">
+            <div className="max-w-5xl mx-auto">
+              {/* Desktop: horizontal connected layout */}
+              <div className="hidden lg:block relative">
+                {/* Connecting line */}
+                <div className="absolute top-5 left-[calc(8.33%+1.25rem)] right-[calc(8.33%+1.25rem)] h-px bg-gradient-to-r from-gold via-teal to-gold" />
+                <div className="grid grid-cols-6 gap-4">
+                  {mortgageSteps.map((item) => (
+                    <div key={item.step} className="text-center">
+                      <div className="w-10 h-10 bg-navy text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3 relative z-10 ring-4 ring-white">
+                        {item.step}
+                      </div>
+                      <h3 className="text-sm font-semibold text-navy mb-1">{item.title}</h3>
+                      <p className="text-xs text-body-light leading-relaxed">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Mobile/Tablet: grid fallback */}
+              <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mortgageSteps.map((item) => (
+                  <div key={item.step} className="bg-white rounded-2xl shadow-sm p-6">
+                    <div className="w-10 h-10 bg-navy text-white rounded-full flex items-center justify-center text-sm font-bold mb-3">
+                      {item.step}
+                    </div>
+                    <h3 className="text-base font-semibold text-navy mb-1">{item.title}</h3>
+                    <p className="text-sm text-body">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AnimateOnScroll>
         </div>
       </section>
 
       {/* Refinance & DPA */}
-      <section className="py-20 md:py-24">
+      <section className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-border p-8">
-              <h3 className="text-lg font-semibold text-navy mb-4">Refinance Options</h3>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-semibold text-navy">Rate-and-Term Refinance</h4>
-                  <p className="text-sm text-body">Lower your payment, shorten your term, or switch from adjustable to fixed. Same rates as purchase loans.</p>
+          <AnimateOnScroll animation="stagger-children">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-8">
+                <h3 className="text-lg font-semibold text-navy mb-4">Refinance Options</h3>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-semibold text-navy">Rate-and-Term Refinance</h4>
+                    <p className="text-sm text-body">Lower your payment, shorten your term, or switch from adjustable to fixed. Same rates as purchase loans.</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-navy">Cash-Out Refinance</h4>
+                    <p className="text-sm text-body">Max 80% LTV (conventional), 85% (FHA), 90% (VA). Rates typically 0.125%–0.250% above standard.</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-navy">Streamline Refinance</h4>
+                    <p className="text-sm text-body">FHA Streamline and VA IRRRL with reduced docs. May not require a new appraisal.</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-navy">Cash-Out Refinance</h4>
-                  <p className="text-sm text-body">Max 80% LTV (conventional), 85% (FHA), 90% (VA). Rates typically 0.125%–0.250% above standard.</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-navy">Streamline Refinance</h4>
-                  <p className="text-sm text-body">FHA Streamline and VA IRRRL with reduced docs. May not require a new appraisal.</p>
+              </div>
+              <div className="bg-navy grain-overlay rounded-2xl p-8 relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="text-lg font-semibold text-white mb-4">Down Payment Assistance</h3>
+                  <p className="text-white/60 mb-4">
+                    Emerie First Bank participates in TSAHC and Southeast Texas Housing Finance Corporation programs offering grants or forgivable second liens.
+                  </p>
+                  <ul className="space-y-2">
+                    {[
+                      "Covers down payment and closing costs",
+                      "Based on income, credit score, and location",
+                      "Our loan officers help determine eligibility",
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-white/80">
+                        <svg className="w-4 h-4 text-gold mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-6 pt-4 border-t border-white/10 text-sm text-white/40">
+                    $500 application fee (credited to closing costs). Closing costs typically 2%–5% of loan amount.
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="bg-navy rounded-2xl p-8">
-              <h3 className="text-lg font-semibold text-white mb-4">Down Payment Assistance</h3>
-              <p className="text-white/70 mb-4">
-                Emerie First Bank participates in TSAHC and Southeast Texas Housing Finance Corporation programs offering grants or forgivable second liens.
-              </p>
-              <ul className="space-y-2">
-                {[
-                  "Covers down payment and closing costs",
-                  "Based on income, credit score, and location",
-                  "Our loan officers help determine eligibility",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-white/80">
-                    <svg className="w-4 h-4 text-gold mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-6 pt-4 border-t border-white/10 text-sm text-white/50">
-                $500 application fee (credited to closing costs). Closing costs typically 2%–5% of loan amount.
-              </div>
-            </div>
-          </div>
+          </AnimateOnScroll>
         </div>
       </section>
 

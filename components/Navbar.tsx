@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/about", label: "About" },
@@ -14,18 +15,19 @@ const navLinks = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
+    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-border/50 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-28 items-center justify-between">
+        <div className="flex h-24 items-center justify-between">
           <Link href="/" className="flex-shrink-0">
             <Image
               src="/EmerieFirstBankNoBackgroundWeb.png"
               alt="Emerie First Bank"
-              width={440}
-              height={96}
-              className="h-24 w-auto"
+              width={280}
+              height={56}
+              className="h-28 w-auto"
               priority
             />
           </Link>
@@ -36,14 +38,21 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm font-medium text-navy rounded-lg transition-colors hover:bg-cream hover:text-gold-dark"
+                className={`relative px-4 py-2 text-sm font-medium transition-colors ${
+                  pathname === link.href
+                    ? "text-navy"
+                    : "text-body hover:text-navy"
+                }`}
               >
                 {link.label}
+                {pathname === link.href && (
+                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gold rounded-full" />
+                )}
               </Link>
             ))}
             <Link
               href="/personal"
-              className="ml-4 inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gold rounded-lg transition-all hover:bg-gold-dark hover:shadow-md"
+              className="ml-4 btn-premium inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gold rounded-lg transition-all hover:bg-gold-dark hover:shadow-md"
             >
               Open an Account
             </Link>
@@ -68,14 +77,18 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-white">
+        <div className="md:hidden border-t border-border/50 bg-white/95 backdrop-blur-lg">
           <div className="px-4 py-3 space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-4 py-3 text-sm font-medium text-navy rounded-lg hover:bg-cream"
+                className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                  pathname === link.href
+                    ? "text-navy bg-cream"
+                    : "text-body hover:text-navy hover:bg-cream"
+                }`}
               >
                 {link.label}
               </Link>

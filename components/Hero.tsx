@@ -9,7 +9,9 @@ interface HeroProps {
 export default function Hero({ title, subtitle, large = false, videoSrc, children }: HeroProps) {
   return (
     <section
-      className={`relative bg-navy overflow-hidden ${large ? "py-28 md:py-36" : "py-16 md:py-24"}`}
+      className={`relative bg-navy overflow-hidden grain-overlay ${
+        large ? "py-32 md:py-40" : "py-20 md:py-28"
+      }`}
     >
       {/* Video background */}
       {videoSrc && (
@@ -23,29 +25,31 @@ export default function Hero({ title, subtitle, large = false, videoSrc, childre
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
-          {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-navy/70" />
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/80 to-navy/40" />
         </>
       )}
 
       {/* Decorative background (shown when no video) */}
       {!videoSrc && (
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gold rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-teal rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy-light to-navy" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
         </div>
       )}
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
         <h1
-          className={`font-bold text-white leading-tight ${
-            large ? "text-4xl md:text-5xl lg:text-6xl" : "text-3xl md:text-4xl lg:text-5xl"
+          className={`font-light text-white leading-[1.1] tracking-tight ${
+            large
+              ? "text-4xl md:text-5xl lg:text-7xl"
+              : "text-3xl md:text-4xl lg:text-5xl"
           }`}
         >
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-4 md:mt-6 text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-5 md:mt-8 text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed font-light">
             {subtitle}
           </p>
         )}
