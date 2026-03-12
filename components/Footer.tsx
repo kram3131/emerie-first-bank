@@ -107,8 +107,15 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Demo disclaimer */}
+        <div className="mt-14 bg-white/5 rounded-lg p-4 text-center">
+          <p className="text-xs text-white/50">
+            This website is a demonstration product of <span className="text-gold/70 font-medium">Emerie AI</span>. Emerie First Bank is not a real financial institution. All rates, offers, account details, branch locations, and contact information shown are entirely fictitious and for demo purposes only.
+          </p>
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-14 pt-8">
+        <div className="mt-8 pt-8">
           <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/40">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-center">

@@ -18,6 +18,10 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
+    <>
+    <div className="bg-navy text-white/70 text-xs text-center py-2 px-4">
+      <span className="font-semibold text-gold">DEMO SITE</span> — Emerie First Bank is a fictitious institution created to demonstrate the Emerie AI assistant. All information on this site is simulated.
+    </div>
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-border/50 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-24 items-center justify-between">
@@ -104,5 +108,6 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+    </>
   );
 }
