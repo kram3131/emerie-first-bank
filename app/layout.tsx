@@ -3,7 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import VoiceWidget from "@/components/VoiceWidget";
+import TextChatWidget from "@/components/TextChatWidget";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -29,7 +29,7 @@ export default function RootLayout({
         <Navbar />
         <main>{children}</main>
         <Footer />
-        <VoiceWidget />
+        <TextChatWidget />
       </body>
     </html>
   );

@@ -53,6 +53,7 @@ export async function POST() {
   const callBody: Record<string, unknown> = {
     systemPrompt: tpl.systemPrompt,
     medium: { webRtc: {} },
+    initialOutputMedium: "MESSAGE_MEDIUM_TEXT",
     firstSpeakerSettings: tpl.firstSpeakerSettings || { agent: {} },
     selectedTools: [...(tpl.selectedTools || []), navigateTool],
   };
@@ -62,7 +63,6 @@ export async function POST() {
   if (tpl.languageHint) callBody.languageHint = tpl.languageHint;
   if (tpl.temperature != null) callBody.temperature = tpl.temperature;
   if (tpl.maxDuration) callBody.maxDuration = tpl.maxDuration;
-  if (tpl.initialOutputMedium) callBody.initialOutputMedium = tpl.initialOutputMedium;
   if (tpl.inactivityMessages) callBody.inactivityMessages = tpl.inactivityMessages;
 
   const response = await fetch(
