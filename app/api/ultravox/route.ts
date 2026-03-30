@@ -62,8 +62,8 @@ export async function POST() {
   if (tpl.voice) callBody.voice = tpl.voice;
   if (tpl.languageHint) callBody.languageHint = tpl.languageHint;
   if (tpl.temperature != null) callBody.temperature = tpl.temperature;
-  if (tpl.maxDuration) callBody.maxDuration = tpl.maxDuration;
-  if (tpl.inactivityMessages) callBody.inactivityMessages = tpl.inactivityMessages;
+  // Omit maxDuration and inactivityMessages for text chat —
+  // voice timeouts are too aggressive for users who need time to type.
 
   const response = await fetch(
     "https://api.ultravox.ai/api/calls",

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import TextChatWidget from "@/components/TextChatWidget";
+import AppShell from "@/components/AppShell";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -26,10 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} antialiased`}>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <TextChatWidget />
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
