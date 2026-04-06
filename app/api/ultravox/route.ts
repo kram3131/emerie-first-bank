@@ -53,7 +53,6 @@ export async function POST() {
   const callBody: Record<string, unknown> = {
     systemPrompt: tpl.systemPrompt,
     medium: { webRtc: {} },
-    initialOutputMedium: "MESSAGE_MEDIUM_TEXT",
     firstSpeakerSettings: tpl.firstSpeakerSettings || { agent: {} },
     selectedTools: [...(tpl.selectedTools || []), navigateTool],
   };
@@ -62,8 +61,8 @@ export async function POST() {
   if (tpl.voice) callBody.voice = tpl.voice;
   if (tpl.languageHint) callBody.languageHint = tpl.languageHint;
   if (tpl.temperature != null) callBody.temperature = tpl.temperature;
-  // Omit maxDuration and inactivityMessages for text chat —
-  // voice timeouts are too aggressive for users who need time to type.
+  if (tpl.maxDuration) callBody.maxDuration = tpl.maxDuration;
+  if (tpl.inactivityMessages) callBody.inactivityMessages = tpl.inactivityMessages;
 
   const response = await fetch(
     "https://api.ultravox.ai/api/calls",
