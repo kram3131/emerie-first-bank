@@ -184,7 +184,16 @@ export async function POST() {
     systemPrompt: SYSTEM_PROMPT,
     medium: { webRtc: {} },
     firstSpeakerSettings: FIRST_SPEAKER,
-    selectedTools: [...(tpl.selectedTools || []), navigateTool],
+    // Filter out transferCall and hangUp — they don't exist on the web widget
+    // and cause looping when the model tries to call them
+    selectedTools: [
+      ...(tpl.selectedTools || []).filter((t: Record<string, unknown>) => {
+        const tmp = t?.temporaryTool as Record<string, unknown> | undefined;
+        const name = (tmp?.modelToolName as string) || (t?.toolName as string) || "";
+        return name !== "transferCall" && name !== "hangUp";
+      }),
+      navigateTool,
+    ],
   };
 
   if (tpl.model) callBody.model = tpl.model;
