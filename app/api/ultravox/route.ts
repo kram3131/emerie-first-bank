@@ -6,7 +6,7 @@ const navigateTool = {
   temporaryTool: {
     modelToolName: "navigateToPage",
     description:
-      "Navigates the user's browser to a page on the Emerie First Bank website. Use this when the user asks about a topic that has a dedicated page, or when you want to show them relevant information. Always tell the user you're navigating them before calling this tool.",
+      "Navigates the user's browser to a page on the Emerie First Bank website. Use this when the user asks about a topic that has a dedicated page. Tell the user you're navigating them BEFORE calling this tool. AFTER the tool returns, do NOT restate your previous answer — just ask a short follow-up question like 'Want me to walk you through the details?' or 'Anything specific you'd like to know?'",
     dynamicParameters: [
       {
         name: "page",

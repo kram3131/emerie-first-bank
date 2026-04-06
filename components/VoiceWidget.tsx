@@ -62,9 +62,9 @@ export default function VoiceWidget() {
           const page = params.page || "/";
           if (VALID_PAGES.includes(page)) {
             router.push(page);
-            return `Navigated to ${page}`;
+            return `Done. Page is now showing ${page}. Do NOT repeat what you already said. Just ask a brief follow-up question.`;
           }
-          return `Invalid page: ${page}`;
+          return `Invalid page: ${page}. Continue the conversation without navigating.`;
         }
       );
 
