@@ -204,7 +204,8 @@ export async function POST() {
 
   if (tpl.model) callBody.model = tpl.model;
   if (tpl.voice) callBody.voice = tpl.voice;
-  if (tpl.languageHint) callBody.languageHint = tpl.languageHint;
+  // Always force English to prevent TTS from slipping into other languages
+  callBody.languageHint = "en";
   if (tpl.temperature != null) callBody.temperature = tpl.temperature;
   if (tpl.maxDuration) callBody.maxDuration = tpl.maxDuration;
   if (tpl.inactivityMessages) callBody.inactivityMessages = tpl.inactivityMessages;
