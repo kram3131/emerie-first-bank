@@ -26,6 +26,46 @@ const navigateTool = {
   },
 };
 
+const transferFundsTool = {
+  temporaryTool: {
+    modelToolName: "transferFunds",
+    description:
+      "Move money between the customer's own accounts. ONLY call after identity verification has passed AND the customer has explicitly confirmed the from-account, to-account, and amount. Allowed routes: checking<->savings, and checking->auto_loan as a one-time loan payment. The tool result includes the new balances — read them back to the customer.",
+    dynamicParameters: [
+      {
+        name: "from",
+        location: "PARAMETER_LOCATION_BODY",
+        schema: {
+          type: "string",
+          enum: ["checking", "savings"],
+          description: "Source account.",
+        },
+        required: true,
+      },
+      {
+        name: "to",
+        location: "PARAMETER_LOCATION_BODY",
+        schema: {
+          type: "string",
+          enum: ["checking", "savings", "auto_loan"],
+          description: "Destination account.",
+        },
+        required: true,
+      },
+      {
+        name: "amount",
+        location: "PARAMETER_LOCATION_BODY",
+        schema: {
+          type: "number",
+          description: "Dollar amount to move (positive number).",
+        },
+        required: true,
+      },
+    ],
+    client: {},
+  },
+};
+
 const FIRST_SPEAKER = {
   agent: {
     uninterruptible: true,
@@ -82,6 +122,7 @@ export async function POST() {
         return !DROPPED_TOOLS.has(name);
       }),
       navigateTool,
+      transferFundsTool,
     ],
   };
 

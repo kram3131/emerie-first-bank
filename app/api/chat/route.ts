@@ -2,23 +2,64 @@ import { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { loadKnowledgeBase } from "@/lib/kb";
 import { CHAT_SYSTEM_PROMPT } from "@/lib/systemPrompt";
+import {
+  AccountState,
+  INITIAL_ACCOUNT_STATE,
+  applyTransfer,
+  describeAccountState,
+  TransferInput,
+} from "@/lib/accounts";
 
 export const runtime = "nodejs";
 
 const MODEL = "claude-haiku-4-5-20251001";
+const MAX_TOOL_ITERATIONS = 6;
 
 const VALID_PAGES = ["/", "/personal", "/business", "/loans", "/locations", "/about"];
 
-type IncomingMessage = {
-  role: "user" | "assistant";
-  content:
-    | string
-    | Array<
-        | { type: "text"; text: string }
-        | { type: "tool_use"; id: string; name: string; input: unknown }
-        | { type: "tool_result"; tool_use_id: string; content: string }
-      >;
-};
+const TOOLS: Anthropic.Tool[] = [
+  {
+    name: "navigate_to_page",
+    description:
+      "Navigate the visitor's browser to a page on the Emerie First Bank website. Use whenever a topic has a dedicated page so they can see the full details. Briefly tell the visitor first.",
+    input_schema: {
+      type: "object",
+      properties: {
+        page: {
+          type: "string",
+          enum: VALID_PAGES,
+          description: "The page path to navigate to.",
+        },
+      },
+      required: ["page"],
+    },
+  },
+  {
+    name: "transfer_funds",
+    description:
+      "Move money between the customer's own accounts. ONLY call after identity verification has passed AND the customer has explicitly confirmed the from-account, to-account, and amount. Allowed routes: checking<->savings, and checking->auto_loan (as a loan payment).",
+    input_schema: {
+      type: "object",
+      properties: {
+        from: {
+          type: "string",
+          enum: ["checking", "savings"],
+          description: "Source account.",
+        },
+        to: {
+          type: "string",
+          enum: ["checking", "savings", "auto_loan"],
+          description: "Destination account.",
+        },
+        amount: {
+          type: "number",
+          description: "Dollar amount to move. Must be positive and >= 0.01.",
+        },
+      },
+      required: ["from", "to", "amount"],
+    },
+  },
+];
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -37,57 +78,28 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  let body: { messages?: IncomingMessage[] };
+  let body: {
+    messages?: Anthropic.MessageParam[];
+    accountState?: Partial<AccountState>;
+  };
   try {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "Bad JSON" }), { status: 400 });
   }
-  const messages = body.messages || [];
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return new Response(JSON.stringify({ error: "messages required" }), { status: 400 });
+  const incomingMessages = body.messages || [];
+  if (!Array.isArray(incomingMessages) || incomingMessages.length === 0) {
+    return new Response(JSON.stringify({ error: "messages required" }), {
+      status: 400,
+    });
   }
 
-  // Anthropic requires every assistant `tool_use` to be followed by a user
-  // `tool_result` in the next message. Our navigate_to_page tool is handled
-  // client-side and has no meaningful return value, so inject synthetic
-  // tool_result blocks wherever they're missing.
-  const normalized: IncomingMessage[] = [];
-  for (let i = 0; i < messages.length; i++) {
-    const msg = messages[i];
-    normalized.push(msg);
-    if (msg.role !== "assistant" || typeof msg.content === "string") continue;
-    const toolUses = msg.content.filter(
-      (b): b is { type: "tool_use"; id: string; name: string; input: unknown } =>
-        b.type === "tool_use"
-    );
-    if (toolUses.length === 0) continue;
-    const next = messages[i + 1];
-    const nextResultIds = new Set<string>();
-    if (next && next.role === "user" && Array.isArray(next.content)) {
-      for (const b of next.content) {
-        if (b.type === "tool_result") nextResultIds.add(b.tool_use_id);
-      }
-    }
-    const missing = toolUses.filter((tu) => !nextResultIds.has(tu.id));
-    if (missing.length === 0) continue;
-    const syntheticResults = missing.map((tu) => ({
-      type: "tool_result" as const,
-      tool_use_id: tu.id,
-      content: "ok",
-    }));
-    if (next && next.role === "user" && Array.isArray(next.content)) {
-      // Merge into the existing next user message
-      const merged: IncomingMessage = {
-        role: "user",
-        content: [...syntheticResults, ...next.content],
-      };
-      normalized.push(merged);
-      i++; // skip original next
-    } else {
-      normalized.push({ role: "user", content: syntheticResults });
-    }
-  }
+  // Server-side mutable state for THIS request. Seeded from the client's
+  // current state so transfers compose across turns.
+  const accountState: AccountState = {
+    ...INITIAL_ACCOUNT_STATE,
+    ...(body.accountState || {}),
+  };
 
   const client = new Anthropic({ apiKey });
   const kb = loadKnowledgeBase();
@@ -100,65 +112,124 @@ export async function POST(req: NextRequest) {
       };
 
       try {
-        const anthropicStream = client.messages.stream({
-          model: MODEL,
-          max_tokens: 1024,
-          system: [
-            { type: "text", text: CHAT_SYSTEM_PROMPT },
-            {
-              type: "text",
-              text: `# Knowledge Base\n\n${kb}`,
-              cache_control: { type: "ephemeral" },
-            },
-          ],
-          tools: [
-            {
-              name: "navigate_to_page",
-              description:
-                "Navigate the visitor's browser to a page on the Emerie First Bank website. Use whenever a topic has a dedicated page so they can see the full details. Briefly tell the visitor first.",
-              input_schema: {
-                type: "object",
-                properties: {
-                  page: {
-                    type: "string",
-                    enum: VALID_PAGES,
-                    description: "The page path to navigate to.",
-                  },
-                },
-                required: ["page"],
+        // Working message list — we append assistant + tool_result turns
+        // as the agent loop runs.
+        const messages: Anthropic.MessageParam[] = [...incomingMessages];
+
+        for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+          const anthropicStream = client.messages.stream({
+            model: MODEL,
+            max_tokens: 1024,
+            system: [
+              { type: "text", text: CHAT_SYSTEM_PROMPT },
+              {
+                type: "text",
+                text: `# Knowledge Base\n\n${kb}`,
+                cache_control: { type: "ephemeral" },
               },
-            },
-          ],
-          messages: normalized as Anthropic.MessageParam[],
-        });
+              {
+                type: "text",
+                text: describeAccountState(accountState),
+              },
+            ],
+            tools: TOOLS,
+            messages,
+          });
 
-        anthropicStream.on("text", (delta) => {
-          send({ type: "text", text: delta });
-        });
+          anthropicStream.on("text", (delta) => {
+            send({ type: "text", text: delta });
+          });
 
-        anthropicStream.on("contentBlock", (block) => {
-          if (block.type === "tool_use") {
+          const final = await anthropicStream.finalMessage();
+
+          if (final.stop_reason !== "tool_use") {
+            // Done — model finished without (or after) tool calls.
             send({
-              type: "tool_use",
-              id: block.id,
-              name: block.name,
-              input: block.input,
+              type: "state",
+              accountState,
             });
+            send({
+              type: "done",
+              stop_reason: final.stop_reason,
+              usage: final.usage,
+            });
+            controller.close();
+            return;
           }
-        });
 
-        const final = await anthropicStream.finalMessage();
+          // Append the assistant message verbatim (so tool_use ids stay intact),
+          // then build a user message with tool_result blocks for each call.
+          messages.push({ role: "assistant", content: final.content });
+
+          const toolResults: Anthropic.ToolResultBlockParam[] = [];
+          for (const block of final.content) {
+            if (block.type !== "tool_use") continue;
+
+            if (block.name === "navigate_to_page") {
+              const page =
+                typeof (block.input as { page?: string })?.page === "string"
+                  ? (block.input as { page: string }).page
+                  : "/";
+              // Tell the client to navigate
+              send({
+                type: "tool_use",
+                id: block.id,
+                name: "navigate_to_page",
+                input: { page },
+              });
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: block.id,
+                content: VALID_PAGES.includes(page)
+                  ? `ok. Browser navigated to ${page}.`
+                  : `error: ${page} is not a valid page.`,
+              });
+            } else if (block.name === "transfer_funds") {
+              const input = block.input as TransferInput;
+              const result = applyTransfer(accountState, input);
+              if (result.ok) {
+                accountState.checking = result.balances.checking;
+                accountState.savings = result.balances.savings;
+                accountState.autoLoanBalance = result.balances.autoLoanBalance;
+                toolResults.push({
+                  type: "tool_result",
+                  tool_use_id: block.id,
+                  content: result.summary,
+                });
+              } else {
+                toolResults.push({
+                  type: "tool_result",
+                  tool_use_id: block.id,
+                  is_error: true,
+                  content: result.error,
+                });
+              }
+            } else {
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: block.id,
+                is_error: true,
+                content: `Unknown tool: ${block.name}`,
+              });
+            }
+          }
+
+          messages.push({ role: "user", content: toolResults });
+          // Loop and let the model narrate the result.
+        }
+
+        // Iteration cap reached
         send({
-          type: "done",
-          stop_reason: final.stop_reason,
-          usage: final.usage,
+          type: "error",
+          error: "Too many tool iterations.",
         });
+        send({ type: "state", accountState });
+        controller.close();
       } catch (err) {
         send({
           type: "error",
           error: err instanceof Error ? err.message : "Unknown error",
         });
-      } finally {
         controller.close();
       }
     },

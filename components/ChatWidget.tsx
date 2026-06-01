@@ -4,6 +4,12 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import {
+  AccountState,
+  INITIAL_ACCOUNT_STATE,
+  applyTransfer,
+  TransferInput,
+} from "@/lib/accounts";
 
 type Mode = "chat" | "voice";
 
@@ -53,6 +59,18 @@ export default function ChatWidget() {
   const [streaming, setStreaming] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Per-session account state. Reset on page reload. Shared with the voice
+  // mode via a ref so transfers made in either mode are visible in the other
+  // mode within the same page session.
+  const [accountState, setAccountState] = useState<AccountState>(
+    INITIAL_ACCOUNT_STATE
+  );
+  const accountStateRef = useRef<AccountState>(INITIAL_ACCOUNT_STATE);
+  useEffect(() => {
+    accountStateRef.current = accountState;
+  }, [accountState]);
 
   // ---------- Voice state ----------
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("disconnected");
@@ -101,7 +119,10 @@ export default function ChatWidget() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: apiMessages }),
+          body: JSON.stringify({
+            messages: apiMessages,
+            accountState: accountStateRef.current,
+          }),
         });
         if (!res.ok || !res.body) {
           const err = await res.json().catch(() => ({ error: "Request failed" }));
@@ -162,6 +183,9 @@ export default function ChatWidget() {
               ) {
                 router.push(tu.input.page);
               }
+            } else if (event.type === "state") {
+              const incoming = event.accountState as AccountState | undefined;
+              if (incoming) setAccountState(incoming);
             } else if (event.type === "error") {
               throw new Error((event.error as string) || "Stream error");
             }
@@ -171,6 +195,8 @@ export default function ChatWidget() {
         setChatError(err instanceof Error ? err.message : "Failed to send");
       } finally {
         setStreaming(false);
+        // Refocus input so the customer can keep typing without re-clicking.
+        requestAnimationFrame(() => inputRef.current?.focus());
       }
     },
     [messages, streaming, router]
@@ -199,6 +225,28 @@ export default function ChatWidget() {
             return `Done. Page is now showing ${page}. Do NOT repeat what you already said. Just ask a brief follow-up question.`;
           }
           return `Invalid page: ${page}. Continue the conversation without navigating.`;
+        }
+      );
+
+      // Funds-transfer tool for voice. Same logic as the chat agent uses
+      // server-side, applied to the shared accountStateRef so transfers
+      // started on a voice call carry into a follow-up text chat (and
+      // vice versa) within the same page session.
+      session.registerToolImplementation(
+        "transferFunds",
+        (params: { from?: string; to?: string; amount?: number }) => {
+          const input: TransferInput = {
+            from: (params.from as TransferInput["from"]) ?? "checking",
+            to: (params.to as TransferInput["to"]) ?? "savings",
+            amount: Number(params.amount ?? 0),
+          };
+          const result = applyTransfer(accountStateRef.current, input);
+          if (!result.ok) {
+            return `Transfer rejected: ${result.error}`;
+          }
+          accountStateRef.current = result.balances;
+          setAccountState(result.balances);
+          return result.summary;
         }
       );
       session.addEventListener("status", () => {
@@ -407,12 +455,13 @@ export default function ChatWidget() {
             className="p-3 bg-white border-t border-border flex gap-2"
           >
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Alex anything…"
-              disabled={streaming}
-              className="flex-1 px-3 py-2 text-sm rounded-full border border-border bg-cream/50 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:bg-white disabled:opacity-50"
+              placeholder={streaming ? "Alex is typing…" : "Ask Alex anything…"}
+              className="flex-1 px-3 py-2 text-sm rounded-full border border-border bg-cream/50 focus:outline-none focus:ring-2 focus:ring-gold/50 focus:bg-white"
+              autoFocus
             />
             <button
               type="submit"
