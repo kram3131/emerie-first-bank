@@ -18,7 +18,9 @@ const MAX_TOOL_ITERATIONS = 6;
 
 const VALID_PAGES = ["/", "/personal", "/business", "/loans", "/locations", "/about"];
 
-const TOOLS: Anthropic.Tool[] = [
+const USE_ULTRAVOX_CORPUS = !!BRAND.ultravoxCorpusId;
+
+const BASE_TOOLS: Anthropic.Tool[] = [
   {
     name: "navigate_to_page",
     description: `Navigate the visitor's browser to a page on the ${BRAND.name} website. Use whenever a topic has a dedicated page so they can see the full details. Briefly tell the visitor first.`,
@@ -61,6 +63,62 @@ const TOOLS: Anthropic.Tool[] = [
   },
 ];
 
+const CORPUS_TOOL: Anthropic.Tool = {
+  name: "query_corpus",
+  description: `Retrieve up-to-date content from the ${BRAND.name} knowledge base. Use for ANY factual question about products, rates, fees, hours, locations, or policies — the base system prompt does NOT contain those details. Call this first, read the returned chunks, then answer the visitor. Do not answer product/rate questions from memory.`,
+  input_schema: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description:
+          "A short natural-language question or phrase to search the knowledge base for. Optimize for retrieval (e.g. 'checking account monthly fee', not 'hello can you tell me about fees').",
+      },
+    },
+    required: ["query"],
+  },
+};
+
+const TOOLS: Anthropic.Tool[] = USE_ULTRAVOX_CORPUS
+  ? [...BASE_TOOLS, CORPUS_TOOL]
+  : BASE_TOOLS;
+
+async function queryUltravoxCorpus(query: string): Promise<string> {
+  const key = process.env.ULTRAVOX_API_KEY;
+  if (!key || !BRAND.ultravoxCorpusId) {
+    return "error: knowledge base not configured";
+  }
+  try {
+    const res = await fetch(
+      `https://api.ultravox.ai/api/corpora/${BRAND.ultravoxCorpusId}/query`,
+      {
+        method: "POST",
+        headers: {
+          "X-API-Key": key,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query, max_results: 3 }),
+      }
+    );
+    if (!res.ok) {
+      const body = await res.text();
+      return `error: corpus query failed (${res.status}): ${body.slice(0, 200)}`;
+    }
+    const data = (await res.json()) as Array<{ content?: string; documentUrl?: string }>;
+    if (!Array.isArray(data) || data.length === 0) {
+      return "No matching content found in the knowledge base for that query.";
+    }
+    return data
+      .map((chunk, i) => {
+        const src = chunk.documentUrl ? ` (source: ${chunk.documentUrl})` : "";
+        return `## Result ${i + 1}${src}\n\n${chunk.content?.trim() || ""}`;
+      })
+      .join("\n\n---\n\n");
+  } catch (err) {
+    return `error: ${err instanceof Error ? err.message : "unknown"}`;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -102,7 +160,10 @@ export async function POST(req: NextRequest) {
   };
 
   const client = new Anthropic({ apiKey });
-  const kb = loadKnowledgeBase();
+  // When BRAND.ultravoxCorpusId is set, grounding comes from the Ultravox
+  // corpus via the query_corpus tool (fresh, matches voice mode). Otherwise
+  // (Emerie default) fall back to the inline local kb/*.md files.
+  const kb = USE_ULTRAVOX_CORPUS ? null : loadKnowledgeBase();
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -122,11 +183,16 @@ export async function POST(req: NextRequest) {
             max_tokens: 1024,
             system: [
               { type: "text", text: CHAT_SYSTEM_PROMPT },
-              {
-                type: "text",
-                text: `# Knowledge Base\n\n${kb}`,
-                cache_control: { type: "ephemeral" },
-              },
+              kb
+                ? {
+                    type: "text",
+                    text: `# Knowledge Base\n\n${kb}`,
+                    cache_control: { type: "ephemeral" },
+                  }
+                : {
+                    type: "text",
+                    text: `# Knowledge Base\n\nUse the \`query_corpus\` tool for ANY product, rate, fee, hours, location, or policy question. Do not answer from memory — always retrieve first. Give a brief natural acknowledgement before calling it and pull only the specific fact the visitor asked about.`,
+                  },
               {
                 type: "text",
                 text: describeAccountState(accountState),
@@ -183,6 +249,19 @@ export async function POST(req: NextRequest) {
                 content: VALID_PAGES.includes(page)
                   ? `ok. Browser navigated to ${page}.`
                   : `error: ${page} is not a valid page.`,
+              });
+            } else if (block.name === "query_corpus") {
+              const query =
+                typeof (block.input as { query?: string })?.query === "string"
+                  ? (block.input as { query: string }).query
+                  : "";
+              const result = query
+                ? await queryUltravoxCorpus(query)
+                : "error: query is required";
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: block.id,
+                content: result,
               });
             } else if (block.name === "transfer_funds") {
               const input = block.input as TransferInput;
