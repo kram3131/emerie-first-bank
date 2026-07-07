@@ -19,23 +19,25 @@ const MAX_TOOL_ITERATIONS = 6;
 const VALID_PAGES = ["/", "/personal", "/business", "/loans", "/locations", "/about"];
 
 const USE_ULTRAVOX_CORPUS = !!BRAND.ultravoxCorpusId;
+const IS_DEMO_SHELL = BRAND.slug !== "emerie-first-bank";
+
+const NAVIGATE_TOOL: Anthropic.Tool = {
+  name: "navigate_to_page",
+  description: `Navigate the visitor's browser to a page on the ${BRAND.name} website. Use whenever a topic has a dedicated page so they can see the full details. Briefly tell the visitor first.`,
+  input_schema: {
+    type: "object",
+    properties: {
+      page: {
+        type: "string",
+        enum: VALID_PAGES,
+        description: "The page path to navigate to.",
+      },
+    },
+    required: ["page"],
+  },
+};
 
 const BASE_TOOLS: Anthropic.Tool[] = [
-  {
-    name: "navigate_to_page",
-    description: `Navigate the visitor's browser to a page on the ${BRAND.name} website. Use whenever a topic has a dedicated page so they can see the full details. Briefly tell the visitor first.`,
-    input_schema: {
-      type: "object",
-      properties: {
-        page: {
-          type: "string",
-          enum: VALID_PAGES,
-          description: "The page path to navigate to.",
-        },
-      },
-      required: ["page"],
-    },
-  },
   {
     name: "transfer_funds",
     description:
@@ -79,9 +81,13 @@ const CORPUS_TOOL: Anthropic.Tool = {
   },
 };
 
-const TOOLS: Anthropic.Tool[] = USE_ULTRAVOX_CORPUS
-  ? [...BASE_TOOLS, CORPUS_TOOL]
-  : BASE_TOOLS;
+const TOOLS: Anthropic.Tool[] = [
+  // Navigation only when we actually have real pages to route to (not
+  // when the whole "site" is a screenshot in demo-shell mode).
+  ...(IS_DEMO_SHELL ? [] : [NAVIGATE_TOOL]),
+  ...BASE_TOOLS,
+  ...(USE_ULTRAVOX_CORPUS ? [CORPUS_TOOL] : []),
+];
 
 async function queryUltravoxCorpus(query: string): Promise<string> {
   const key = process.env.ULTRAVOX_API_KEY;

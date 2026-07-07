@@ -5,10 +5,15 @@ import {
   TRANSFERS,
   ESCALATION,
 } from "./sharedPrompt";
+import { BRAND } from "./brand";
 
-const TEXT_MEDIUM_RULES = `# Medium: text chat on the bank's website
+const IS_DEMO_SHELL = BRAND.slug !== "emerie-first-bank";
+
+const TEXT_MEDIUM_RULES_BASE = `# Medium: text chat on the bank's website
 - Keep answers tight: 1–3 short paragraphs max. Use bullet lists only when listing 3+ discrete items.
-- Markdown formatting (bold, lists, links) renders properly. Use it sparingly.
+- Markdown formatting (bold, lists, links) renders properly. Use it sparingly.`;
+
+const NAVIGATION_RULES = `
 
 # Navigation tool
 You have a navigate_to_page tool. Use it whenever a visitor asks about a topic that has its own page so they can see the full details visually. Available pages:
@@ -20,6 +25,14 @@ You have a navigate_to_page tool. Use it whenever a visitor asks about a topic t
 - "/about" — history, leadership, community
 
 When you call navigate_to_page, briefly tell the visitor first ("Taking you to our loans page now…") and then in the same response give them the short answer to their actual question. Don't repeat yourself after the tool runs.`;
+
+const NO_NAVIGATION_RULES = `
+
+# No navigation available
+There is NO navigate_to_page tool in this session. You are answering INSIDE a chat overlay on top of a screenshot of ${BRAND.name}'s homepage — you cannot route the visitor anywhere. Never say "let me take you to…", "I've taken you to…", "our loans page will show you…", or anything that implies you can change what they're looking at. Answer their question directly with the information itself.`;
+
+const TEXT_MEDIUM_RULES =
+  TEXT_MEDIUM_RULES_BASE + (IS_DEMO_SHELL ? NO_NAVIGATION_RULES : NAVIGATION_RULES);
 
 export const CHAT_SYSTEM_PROMPT = [
   PERSONA,

@@ -142,7 +142,10 @@ export async function POST() {
         const name = (tmp?.modelToolName as string) || (t?.toolName as string) || "";
         return !DROPPED_TOOLS.has(name);
       }),
-      navigateTool,
+      // In demo-shell mode the "page" is a screenshot — there's nothing to
+      // navigate to, so don't expose the tool. Otherwise the model narrates
+      // fake page changes.
+      ...(BRAND.slug === "emerie-first-bank" ? [navigateTool] : []),
       transferFundsTool,
       ...queryCorpusTool,
     ],
