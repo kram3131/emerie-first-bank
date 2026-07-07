@@ -39,19 +39,25 @@ const ROOT = path.resolve(__dirname, "..");
 // Emerie project would overwrite the live demo. Force the operator to run
 // against a fresh clone instead.
 //
-// The check has three layers:
-//   1. Git remote URL contains the template repo path (primary signal).
-//   2. Working directory basename is the canonical Emerie folder name.
-//   3. lib/brand.ts still points at the Emerie slug (fallback in case of
-//      forks or renamed remotes).
-// Any single positive fires the guard. `--force` bypasses it (with a warning)
-// for the intentional case where the operator explicitly wants to rewrite
+// The guard fires ONLY if the working directory basename is `emerie-first-bank`
+// AND either the git remote points at the template repo or lib/brand.ts still
+// says slug=emerie-first-bank. Requiring the folder-name match lets fresh
+// clones (which the operator names after the prospect, e.g. `compass-cu`)
+// proceed normally — those clones inherit the same git remote and starting
+// brand.ts, but their folder name will differ.
+//
+// If the operator accidentally clones INTO a folder named `emerie-first-bank`,
+// the guard still catches it because the remote + brand slug also match.
+// `--force` bypasses the guard for the rare case of intentionally rewriting
 // the template itself.
 const FORCE = process.argv.includes("--force");
 {
   const EMERIE_REMOTE_HINT = "kram3131/emerie-first-bank";
   const EMERIE_DIR_HINT = "emerie-first-bank";
   const EMERIE_SLUG_HINT = "emerie-first-bank";
+
+  const dirName = path.basename(ROOT);
+  const isEmerieNamedDir = dirName === EMERIE_DIR_HINT;
 
   let remoteUrl = "";
   try {
@@ -65,8 +71,6 @@ const FORCE = process.argv.includes("--force");
     // No git or no remote — not a signal, keep going.
   }
 
-  const dirName = path.basename(ROOT);
-
   let brandSlug = "";
   try {
     const brandFile = fs.readFileSync(path.join(ROOT, "lib", "brand.ts"), "utf-8");
@@ -76,17 +80,18 @@ const FORCE = process.argv.includes("--force");
     // brand.ts unreadable — not a signal.
   }
 
-  const signals = [];
-  if (remoteUrl.includes(EMERIE_REMOTE_HINT)) signals.push(`git remote → ${remoteUrl}`);
-  if (dirName === EMERIE_DIR_HINT) signals.push(`working dir → ${dirName}`);
-  if (brandSlug === EMERIE_SLUG_HINT) signals.push(`lib/brand.ts slug → ${brandSlug}`);
+  const remoteMatches = remoteUrl.includes(EMERIE_REMOTE_HINT);
+  const slugMatches = brandSlug === EMERIE_SLUG_HINT;
 
-  if (signals.length && !FORCE) {
+  const isTemplate = isEmerieNamedDir && (remoteMatches || slugMatches);
+
+  if (isTemplate && !FORCE) {
     console.error(`
 ✗ REFUSING to run inside the Emerie template repo.
 
 This script rewrites kb/ and lib/brand.ts. Running it here would overwrite
-the live Emerie demo. Clone the repo to a new folder for each new prospect:
+the live Emerie demo. Clone the repo to a differently-named folder for each
+new prospect:
 
   git clone https://github.com/kram3131/emerie-first-bank.git \\
     ~/Desktop/bank-demos/<slug>
@@ -96,16 +101,15 @@ the live Emerie demo. Clone the repo to a new folder for each new prospect:
   npm run demo:new -- --url https://<bank>.com --name "<Bank Name>"
 
 Signals that identified this as the template:
-${signals.map((s) => `  • ${s}`).join("\n")}
-
+  • working dir → ${dirName}
+${remoteMatches ? `  • git remote → ${remoteUrl}\n` : ""}${slugMatches ? `  • lib/brand.ts slug → ${brandSlug}\n` : ""}
 If you REALLY intend to rewrite the template itself (rare), re-run with --force.
 `);
     process.exit(2);
   }
-  if (signals.length && FORCE) {
+  if (isTemplate && FORCE) {
     console.warn(`
 ⚠ --force passed while inside the Emerie template repo. Proceeding anyway.
-  Signals: ${signals.join("; ")}
 `);
   }
 }
@@ -350,7 +354,7 @@ async function createUltravoxCorpus(name) {
   return corpusId;
 }
 
-async function uploadUltravoxSource(corpusId, file) {
+async function startUltravoxCrawl(corpusId, homepageUrl, limit) {
   const res = await fetch(
     `https://api.ultravox.ai/api/corpora/${corpusId}/sources`,
     {
@@ -360,30 +364,20 @@ async function uploadUltravoxSource(corpusId, file) {
         "X-API-Key": ULTRAVOX_KEY,
       },
       body: JSON.stringify({
-        // Ultravox accepts textual sources as `documents` or file uploads;
-        // this shape provides both a name + inline content.
-        source: {
-          documents: {
-            documents: [
-              {
-                name: file.name,
-                mimeType: "text/markdown",
-                content: file.content,
-              },
-            ],
-          },
+        loadSpec: {
+          startUrls: [homepageUrl],
+          maxDepth: 2,
+          maxDocuments: limit,
         },
       }),
     }
   );
   if (!res.ok) {
     const body = await res.text();
-    console.warn(
-      `  ! upload failed for ${file.name} (${res.status}): ${body.slice(0, 200)}`
-    );
-    return false;
+    die(`Ultravox source creation failed (${res.status})`, body);
   }
-  return true;
+  const data = await res.json();
+  return data.sourceId;
 }
 
 // -------- Write lib/brand.ts --------
@@ -428,13 +422,8 @@ export const BRAND: BrandConfig = {
   const corpusId = await createUltravoxCorpus(NAME_ARG);
   log(`Ultravox: corpus id = ${corpusId}`);
 
-  let ok = 0;
-  for (const f of files) {
-    if (await uploadUltravoxSource(corpusId, f)) ok += 1;
-    process.stdout.write(`\r  uploaded ${ok}/${files.length} sources   `);
-  }
-  process.stdout.write("\n");
-  log(`Ultravox: ${ok}/${files.length} sources uploaded`);
+  const sourceId = await startUltravoxCrawl(corpusId, URL_ARG, LIMIT);
+  log(`Ultravox: crawl source ${sourceId} started (Ultravox will index ${URL_ARG} up to ${LIMIT} pages, depth 2)`);
 
   writeBrand({
     name: NAME_ARG,
