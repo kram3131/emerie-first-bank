@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { loadKnowledgeBase } from "@/lib/kb";
 import { VOICE_SYSTEM_PROMPT } from "@/lib/voiceSystemPrompt";
+import { BRAND } from "@/lib/brand";
 
 const AGENT_ID = "b265221e-661f-4e1f-8107-814f76351381";
 
@@ -99,17 +100,38 @@ export async function POST() {
   const agent = await agentRes.json();
   const tpl = agent.callTemplate || {};
 
-  // Build a system prompt that mirrors the text chatbot exactly, with the local
-  // knowledge base injected inline. This keeps text and voice on the same source
-  // of truth so they never drift.
-  const kb = loadKnowledgeBase();
-  const systemPrompt = `${VOICE_SYSTEM_PROMPT}\n\n# Knowledge Base\n\n${kb}`;
+  // Build the voice system prompt. Two grounding paths:
+  //
+  //   1. If BRAND.ultravoxCorpusId is set, we've scraped and uploaded the
+  //      target bank's site to an Ultravox-hosted corpus. Use their queryCorpus
+  //      tool for RAG at speech latency, and skip injecting the full KB inline
+  //      (saves tokens, faster first response). Chat still reads local kb/*.md
+  //      inline — both modes are grounded in the same scraped source.
+  //
+  //   2. If no corpus id is set (default Emerie demo), inject the local kb/*.md
+  //      files inline so voice and chat stay identical.
+  //
+  const useHostedCorpus = !!BRAND.ultravoxCorpusId;
+  const systemPrompt = useHostedCorpus
+    ? `${VOICE_SYSTEM_PROMPT}\n\n# Knowledge Base\n\nUse the queryCorpus tool for any product, rate, fee, hours, location, or policy question. Give a brief natural acknowledgement before calling it and pull only the specific fact the visitor asked about — don't dump everything.`
+    : `${VOICE_SYSTEM_PROMPT}\n\n# Knowledge Base\n\n${loadKnowledgeBase()}`;
 
   // Drop tools that don't belong on the web widget:
   // - transferCall / hangUp: nonexistent on the widget, cause looping
-  // - queryCorpus: points at a separately-hosted Ultravox corpus that drifts
-  //   from our local kb/. We inject the KB directly above instead.
+  // - queryCorpus: we conditionally re-add below with our own corpus id
   const DROPPED_TOOLS = new Set(["transferCall", "hangUp", "queryCorpus"]);
+
+  const queryCorpusTool = useHostedCorpus
+    ? [
+        {
+          toolName: "queryCorpus",
+          parameterOverrides: {
+            corpus_id: BRAND.ultravoxCorpusId,
+            max_results: 3,
+          },
+        },
+      ]
+    : [];
 
   const callBody: Record<string, unknown> = {
     systemPrompt,
@@ -123,6 +145,7 @@ export async function POST() {
       }),
       navigateTool,
       transferFundsTool,
+      ...queryCorpusTool,
     ],
   };
 

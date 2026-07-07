@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# per-demo scratch space (previous bank's kb/ before overwrite)
+.kb-backups/
