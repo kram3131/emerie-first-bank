@@ -380,6 +380,45 @@ async function startUltravoxCrawl(corpusId, homepageUrl, limit) {
   return data.sourceId;
 }
 
+// -------- Firecrawl: full-page screenshot of the homepage --------
+async function firecrawlScreenshot(homepageUrl) {
+  log(`Firecrawl: capturing full-page screenshot of ${homepageUrl}`);
+  const res = await fetch("https://api.firecrawl.dev/v2/scrape", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${FIRECRAWL_KEY}`,
+    },
+    body: JSON.stringify({
+      url: homepageUrl,
+      formats: [{ type: "screenshot", fullPage: true }],
+      onlyMainContent: false,
+    }),
+  });
+  if (!res.ok) {
+    console.warn(`  ! screenshot request failed (${res.status}) — skipping`);
+    return null;
+  }
+  const data = await res.json();
+  const screenshotUrl = data?.data?.screenshot;
+  if (!screenshotUrl || typeof screenshotUrl !== "string") {
+    console.warn(`  ! screenshot missing from response — skipping`);
+    return null;
+  }
+  const imgRes = await fetch(screenshotUrl);
+  if (!imgRes.ok) {
+    console.warn(`  ! screenshot download failed (${imgRes.status}) — skipping`);
+    return null;
+  }
+  const buf = Buffer.from(await imgRes.arrayBuffer());
+  const target = path.join(ROOT, "public", "site-screenshot.png");
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, buf);
+  const kb = Math.round(buf.length / 1024);
+  log(`Screenshot saved to public/site-screenshot.png (${kb} KB)`);
+  return target;
+}
+
 // -------- Write lib/brand.ts --------
 function writeBrand({ name, slug, homepage, corpusId }) {
   const target = path.join(ROOT, "lib", "brand.ts");
@@ -421,6 +460,8 @@ export const BRAND: BrandConfig = {
 
   const corpusId = await createUltravoxCorpus(NAME_ARG);
   log(`Ultravox: corpus id = ${corpusId}`);
+
+  await firecrawlScreenshot(URL_ARG);
 
   const sourceId = await startUltravoxCrawl(corpusId, URL_ARG, LIMIT);
   log(`Ultravox: crawl source ${sourceId} started (Ultravox will index ${URL_ARG} up to ${LIMIT} pages, depth 2)`);

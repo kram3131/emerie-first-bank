@@ -10,6 +10,9 @@ import {
   applyTransfer,
   TransferInput,
 } from "@/lib/accounts";
+import { BRAND } from "@/lib/brand";
+
+const IS_DEMO_SHELL = BRAND.slug !== "emerie-first-bank";
 
 type Mode = "chat" | "voice";
 
@@ -177,6 +180,7 @@ export default function ChatWidget() {
               assistantBlocks.push(tu);
               flushAssistant();
               if (
+                !IS_DEMO_SHELL &&
                 tu.name === "navigate_to_page" &&
                 typeof tu.input.page === "string" &&
                 VALID_PAGES.includes(tu.input.page)
@@ -220,6 +224,11 @@ export default function ChatWidget() {
         "navigateToPage",
         (params: { page?: string }) => {
           const page = params.page || "/";
+          if (IS_DEMO_SHELL) {
+            // In demo-shell mode we don't actually change routes (the whole
+            // page is a screenshot). Just acknowledge back to the model.
+            return `Done. Told the visitor about ${page}. Do NOT repeat what you already said. Just ask a brief follow-up question.`;
+          }
           if (VALID_PAGES.includes(page)) {
             router.push(page);
             return `Done. Page is now showing ${page}. Do NOT repeat what you already said. Just ask a brief follow-up question.`;
