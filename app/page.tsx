@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import SectionHeading from "@/components/SectionHeading";
 import ProductCard from "@/components/ProductCard";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { BRAND } from "@/lib/brand";
 
 const cdRates = [
   { term: "3-Month", apy: "4.50%" },
@@ -16,6 +17,9 @@ const cdRates = [
 ];
 
 export default function Home() {
+  // In demo-shell mode the whole page is a screenshot layered by AppShell;
+  // don't serialize Emerie-specific content into the RSC payload.
+  if (BRAND.slug !== "emerie-first-bank") return null;
   return (
     <>
       {/* Hero */}

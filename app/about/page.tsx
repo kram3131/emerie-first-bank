@@ -3,6 +3,7 @@ import Image from "next/image";
 import Hero from "@/components/Hero";
 import SectionHeading from "@/components/SectionHeading";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { BRAND } from "@/lib/brand";
 
 const values = [
   {
@@ -55,6 +56,7 @@ const stats = [
 ];
 
 export default function AboutPage() {
+  if (BRAND.slug !== "emerie-first-bank") return null;
   return (
     <>
       {/* Hero */}

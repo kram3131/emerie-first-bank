@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { loadKnowledgeBase } from "@/lib/kb";
 import { CHAT_SYSTEM_PROMPT } from "@/lib/systemPrompt";
+import { BRAND } from "@/lib/brand";
 import {
   AccountState,
   INITIAL_ACCOUNT_STATE,
@@ -20,8 +21,7 @@ const VALID_PAGES = ["/", "/personal", "/business", "/loans", "/locations", "/ab
 const TOOLS: Anthropic.Tool[] = [
   {
     name: "navigate_to_page",
-    description:
-      "Navigate the visitor's browser to a page on the Emerie First Bank website. Use whenever a topic has a dedicated page so they can see the full details. Briefly tell the visitor first.",
+    description: `Navigate the visitor's browser to a page on the ${BRAND.name} website. Use whenever a topic has a dedicated page so they can see the full details. Briefly tell the visitor first.`,
     input_schema: {
       type: "object",
       properties: {

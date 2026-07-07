@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { BRAND } from "@/lib/brand";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-cream px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg border border-border p-8">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-navy">Emerie First Bank</h1>
+          <h1 className="text-2xl font-bold text-navy">{BRAND.name}</h1>
           <p className="text-sm text-body-light mt-1">Enter password to continue</p>
         </div>
 

@@ -8,8 +8,7 @@ const AGENT_ID = "b265221e-661f-4e1f-8107-814f76351381";
 const navigateTool = {
   temporaryTool: {
     modelToolName: "navigateToPage",
-    description:
-      "Navigates the user's browser to a page on the Emerie First Bank website. Use this when the user asks about a topic that has a dedicated page. Tell the user you're navigating them BEFORE calling this tool. AFTER the tool returns, do NOT restate your previous answer — just ask a short follow-up question like 'Want me to walk you through the details?' or 'Anything specific you'd like to know?'",
+    description: `Navigates the user's browser to a page on the ${BRAND.name} website. Use this when the user asks about a topic that has a dedicated page. Tell the user you're navigating them BEFORE calling this tool. AFTER the tool returns, do NOT restate your previous answer — just ask a short follow-up question like 'Want me to walk you through the details?' or 'Anything specific you'd like to know?'`,
     dynamicParameters: [
       {
         name: "page",
@@ -70,7 +69,7 @@ const transferFundsTool = {
 const FIRST_SPEAKER = {
   agent: {
     uninterruptible: true,
-    text: "Hi there... I'm Alex, the virtual assistant for Emerie First Bank... I'm here to help with anything you need — account info, rates, hours, you name it. What can I help you with?",
+    text: `Hi there... I'm Alex, the virtual assistant for ${BRAND.name}... I'm here to help with anything you need — account info, rates, hours, you name it. What can I help you with?`,
     delay: "1.5s",
   },
 };

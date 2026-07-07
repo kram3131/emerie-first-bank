@@ -324,7 +324,7 @@ export default function ChatWidget() {
           </div>
           <div>
             <div className="text-white text-sm font-medium">Alex</div>
-            <div className="text-white/60 text-xs">Emerie First Bank assistant</div>
+            <div className="text-white/60 text-xs">{BRAND.name} assistant</div>
           </div>
         </div>
         <button
@@ -372,7 +372,7 @@ export default function ChatWidget() {
             {messages.length === 0 && (
               <div className="space-y-3">
                 <div className="bg-white border border-border rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-body">
-                  Hi! I&apos;m Alex. Ask me anything about Emerie First Bank — accounts, rates, fees, branches, you name it.
+                  Hi! I&apos;m Alex. Ask me anything about {BRAND.name} — accounts, rates, fees, branches, you name it.
                 </div>
                 <div className="flex flex-wrap gap-2 pt-2">
                   {SUGGESTIONS.map((s) => (

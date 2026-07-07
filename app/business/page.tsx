@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import SectionHeading from "@/components/SectionHeading";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { BRAND } from "@/lib/brand";
 
 const businessChecking = [
   {
@@ -148,6 +149,7 @@ const lendingProducts = [
 ];
 
 export default function BusinessBanking() {
+  if (BRAND.slug !== "emerie-first-bank") return null;
   return (
     <>
       <Hero
