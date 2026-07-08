@@ -44,6 +44,10 @@ type Transcript = {
 
 const VALID_PAGES = ["/", "/personal", "/business", "/loans", "/locations", "/about"];
 
+// Voice ("Talk" tab) is temporarily hidden until we're ready to include it
+// in demos. Flip to `true` to expose the Chat / Talk toggle again.
+const VOICE_ENABLED = false;
+
 const SUGGESTIONS = [
   "What are your checking account fees?",
   "Where are you located?",
@@ -338,34 +342,36 @@ export default function ChatWidget() {
         </button>
       </div>
 
-      {/* Mode toggle */}
-      <div className="flex border-b border-border bg-cream/50">
-        <button
-          onClick={() => setMode("chat")}
-          className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-            mode === "chat"
-              ? "text-navy border-b-2 border-gold"
-              : "text-body-light hover:text-body"
-          }`}
-        >
-          Chat
-        </button>
-        <button
-          onClick={() => setMode("voice")}
-          className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-            mode === "voice"
-              ? "text-navy border-b-2 border-gold"
-              : "text-body-light hover:text-body"
-          }`}
-        >
-          Talk
-          {voiceActive && (
-            <span className="inline-block ml-2 w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          )}
-        </button>
-      </div>
+      {/* Mode toggle — hidden while VOICE_ENABLED is false; chat is the only tab */}
+      {VOICE_ENABLED && (
+        <div className="flex border-b border-border bg-cream/50">
+          <button
+            onClick={() => setMode("chat")}
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+              mode === "chat"
+                ? "text-navy border-b-2 border-gold"
+                : "text-body-light hover:text-body"
+            }`}
+          >
+            Chat
+          </button>
+          <button
+            onClick={() => setMode("voice")}
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+              mode === "voice"
+                ? "text-navy border-b-2 border-gold"
+                : "text-body-light hover:text-body"
+            }`}
+          >
+            Talk
+            {voiceActive && (
+              <span className="inline-block ml-2 w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            )}
+          </button>
+        </div>
+      )}
 
-      {mode === "chat" ? (
+      {mode === "chat" || !VOICE_ENABLED ? (
         <>
           {/* Chat thread */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-cream/30">
