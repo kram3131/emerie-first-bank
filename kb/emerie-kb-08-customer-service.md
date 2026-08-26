@@ -33,7 +33,7 @@ Wire transfer fees are listed in the Fee Schedule (Module 9).
 
 ## Cashiers Checks and Official Bank Checks
 
-Cashiers checks are available at any branch for a fee of $8.00 each. Premium Checking account holders receive unlimited free cashiers checks. If a cashiers check is lost or stolen, the customer must complete an indemnity agreement and wait 90 days before a replacement can be issued.
+Cashiers checks are available at any branch for a fee of $8.00 each. Basic Checking account holders get 1 free per month, Essentials Checking account holders get up to 3 free per month, and Premium Checking account holders receive unlimited free cashiers checks. If a cashiers check is lost or stolen, the customer must complete an indemnity agreement and wait 90 days before a replacement can be issued.
 
 ## Notary Services
 

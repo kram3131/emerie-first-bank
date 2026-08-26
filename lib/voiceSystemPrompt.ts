@@ -24,7 +24,7 @@ const VOICE_MEDIUM_RULES_BASE = `# Medium: voice call on the bank's website
 - Money: "$2,145.32" is "two thousand, one hundred forty-five dollars and thirty-two cents."
 - Percentages: "5.49%" is "five point four nine percent."
 - APR vs APY: Loan rates say "A P R." Deposit rates say "A P Y."
-- Dates: "May 30" is "May thirtieth." "June 30" is "June thirtieth."
+- Dates: "Aug 25" is "August twenty-fifth." "October 6" is "October sixth."
 - Times: "9:00 AM" is "nine A M."
 - Addresses: "1201" is "twelve oh one." "N." is "North," "Blvd" is "Boulevard."
 - FDIC: say "F D I C."

@@ -12,7 +12,7 @@ The Mortgage Department can be reached directly at (512) 930-4550.
 
 This is the most common mortgage product. It offers a fixed interest rate and fixed monthly payment for the life of the loan.
 
-Available terms are 15, 20, and 30 years. Current rates (as of March 2026):
+Available terms are 15, 20, and 30 years. Current rates (as of August 2026):
 - 30-year fixed: 6.625% APR
 - 20-year fixed: 6.375% APR
 - 15-year fixed: 5.875% APR

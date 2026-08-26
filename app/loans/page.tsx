@@ -262,7 +262,7 @@ export default function LoansPage() {
           <SectionHeading
             variant="editorial"
             title="Mortgage Products"
-            subtitle="Work with the same loan officer from application through closing. Rates as of March 2026."
+            subtitle="Work with the same loan officer from application through closing. Rates as of August 2026."
           />
           <AnimateOnScroll animation="stagger-children">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -14,6 +14,47 @@ export const INITIAL_ACCOUNT_STATE: AccountState = {
   autoLoanBalance: 14862.0,
 };
 
+// Identity verification is tracked server-side, independent of anything the
+// model claims in its own text — see verify_identity_step and get_account_info
+// in app/api/chat/route.ts. Each flag flips true only after the server itself
+// checks the visitor's raw input against the real secret value.
+export type VerificationState = {
+  accountNumber: boolean;
+  ssnLast4: boolean;
+  smsCode: boolean;
+};
+
+export const INITIAL_VERIFICATION_STATE: VerificationState = {
+  accountNumber: false,
+  ssnLast4: false,
+  smsCode: false,
+};
+
+export function isFullyVerified(v: VerificationState): boolean {
+  return v.accountNumber && v.ssnLast4 && v.smsCode;
+}
+
+export type Transaction = {
+  date: string;
+  description: string;
+  type: "debit" | "credit";
+  amount: number;
+};
+
+export const DEMO_TRANSACTIONS: Transaction[] = [
+  { date: "Aug 25", description: "H-E-B Grocery", type: "debit", amount: 84.23 },
+  { date: "Aug 24", description: "Starbucks", type: "debit", amount: 6.45 },
+  { date: "Aug 23", description: "Direct Deposit from employer", type: "credit", amount: 3200.0 },
+  { date: "Aug 22", description: "AT&T Wireless, Bill Pay", type: "debit", amount: 92.17 },
+  { date: "Aug 20", description: "Shell Gas Station", type: "debit", amount: 48.3 },
+];
+
+export const AUTO_LOAN_INFO = {
+  monthlyPayment: 325,
+  nextPaymentDue: "October 6",
+  rateApr: 5.49,
+};
+
 export type TransferInput = {
   from: "checking" | "savings";
   to: "checking" | "savings" | "auto_loan";
@@ -121,13 +162,24 @@ export function applyTransfer(
   };
 }
 
-export function describeAccountState(state: AccountState): string {
+// The ONLY source of account numbers the model is allowed to quote from.
+// Returned exclusively by the get_account_info tool, which itself refuses to
+// run unless the server's own verificationState says all three identity
+// checks passed — see app/api/chat/route.ts. The model never has these
+// figures sitting in its context before that.
+export function describeFullAccountInfo(state: AccountState): string {
+  const txLines = DEMO_TRANSACTIONS.map(
+    (t) => `- ${t.date}: ${t.description}, ${t.type}, ${fmt(t.amount)}`
+  ).join("\n");
   return [
-    `# Current account state`,
-    `(These are the live balances right now in this session. Always quote these, not the starting balances in the demo data.)`,
+    `Free Checking ending 3847 — balance ${fmt(state.checking)}`,
+    `Recent transactions (most recent first):`,
+    txLines,
     ``,
-    `- Free Checking ending 3847: ${fmt(state.checking)}`,
-    `- Savings ending 2156: ${fmt(state.savings)}`,
-    `- Auto Loan ending 7723: remaining balance ${fmt(state.autoLoanBalance)}`,
+    `Savings Account ending 2156 — balance ${fmt(state.savings)}`,
+    ``,
+    `Auto Loan ending 7723 — $${AUTO_LOAN_INFO.monthlyPayment}/mo, next payment due ${AUTO_LOAN_INFO.nextPaymentDue}, remaining balance ${fmt(state.autoLoanBalance)}, ${AUTO_LOAN_INFO.rateApr}% APR`,
+    ``,
+    `These are the live, authoritative numbers right now in this session — quote them exactly, digit for digit. Do not recompute, round, or restate them from memory on a later turn; call this tool again if you need them again.`,
   ].join("\n");
 }

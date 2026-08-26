@@ -7,10 +7,13 @@ import remarkGfm from "remark-gfm";
 import {
   AccountState,
   INITIAL_ACCOUNT_STATE,
+  VerificationState,
+  INITIAL_VERIFICATION_STATE,
   applyTransfer,
   TransferInput,
 } from "@/lib/accounts";
 import { BRAND } from "@/lib/brand";
+import { maskSensitiveInput } from "@/lib/mask";
 
 const IS_DEMO_SHELL = BRAND.slug !== "emerie-first-bank";
 
@@ -23,7 +26,7 @@ type TextBlock = { type: "text"; text: string };
 type AssistantBlock = TextBlock | ToolUse;
 
 type ChatMessage =
-  | { role: "user"; content: string }
+  | { role: "user"; content: string; display: string }
   | { role: "assistant"; content: AssistantBlock[] };
 
 type VoiceStatus =
@@ -79,6 +82,17 @@ export default function ChatWidget() {
     accountStateRef.current = accountState;
   }, [accountState]);
 
+  // Identity verification progress, mirrored from the server's authoritative
+  // state on every response (see the "state" event below). The server is
+  // the only thing that ever flips a flag to true.
+  const [verificationState, setVerificationState] = useState<VerificationState>(
+    INITIAL_VERIFICATION_STATE
+  );
+  const verificationStateRef = useRef<VerificationState>(INITIAL_VERIFICATION_STATE);
+  useEffect(() => {
+    verificationStateRef.current = verificationState;
+  }, [verificationState]);
+
   // ---------- Voice state ----------
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>("disconnected");
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
@@ -102,7 +116,12 @@ export default function ChatWidget() {
     async (text: string) => {
       if (!text.trim() || streaming) return;
       setChatError(null);
-      const userMsg: ChatMessage = { role: "user", content: text.trim() };
+      const trimmed = text.trim();
+      const userMsg: ChatMessage = {
+        role: "user",
+        content: trimmed,
+        display: maskSensitiveInput(trimmed),
+      };
       const next = [...messages, userMsg];
       setMessages(next);
       setInput("");
@@ -129,6 +148,7 @@ export default function ChatWidget() {
           body: JSON.stringify({
             messages: apiMessages,
             accountState: accountStateRef.current,
+            verificationState: verificationStateRef.current,
           }),
         });
         if (!res.ok || !res.body) {
@@ -194,6 +214,9 @@ export default function ChatWidget() {
             } else if (event.type === "state") {
               const incoming = event.accountState as AccountState | undefined;
               if (incoming) setAccountState(incoming);
+              const incomingVerification =
+                event.verificationState as VerificationState | undefined;
+              if (incomingVerification) setVerificationState(incomingVerification);
             } else if (event.type === "error") {
               throw new Error((event.error as string) || "Stream error");
             }
@@ -399,7 +422,7 @@ export default function ChatWidget() {
                 return (
                   <div key={i} className="flex justify-end">
                     <div className="max-w-[85%] px-3.5 py-2 rounded-2xl rounded-br-sm bg-navy text-white text-sm whitespace-pre-wrap">
-                      {m.content}
+                      {m.display}
                     </div>
                   </div>
                 );
@@ -523,7 +546,7 @@ export default function ChatWidget() {
                       : "bg-white text-body border border-border rounded-tl-sm"
                   } ${!t.isFinal ? "opacity-60" : ""}`}
                 >
-                  {t.text}
+                  {t.speaker === "user" ? maskSensitiveInput(t.text) : t.text}
                 </div>
               </div>
             ))}

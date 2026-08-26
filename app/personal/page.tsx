@@ -243,7 +243,7 @@ export default function PersonalBanking() {
           <SectionHeading
             variant="minimal"
             title="Certificates of Deposit"
-            subtitle="Lock in a guaranteed rate. Minimum deposit $1,000. Rates as of March 2026."
+            subtitle="Lock in a guaranteed rate. Minimum deposit $1,000. Rates as of August 2026."
           />
           <AnimateOnScroll animation="reveal">
             <div className="max-w-3xl mx-auto">

@@ -66,7 +66,7 @@ The account includes check-writing ability (up to six checks or transfers per st
 
 ### Business Line of Credit
 
-A revolving credit line for managing cash flow, covering seasonal expenses, or handling unexpected costs. Credit lines range from $10,000 to $250,000. The rate is variable, currently Prime Rate plus 1.00% to Prime Rate plus 3.00% depending on creditworthiness and collateral. As of March 2026, that puts the rate range at 8.50% to 10.50% APR.
+A revolving credit line for managing cash flow, covering seasonal expenses, or handling unexpected costs. Credit lines range from $10,000 to $250,000. The rate is variable, currently Prime Rate plus 1.00% to Prime Rate plus 3.00% depending on creditworthiness and collateral. As of August 2026, that puts the rate range at 8.50% to 10.50% APR.
 
 Interest-only payments are required during the draw period. Annual review is required. A $250 annual fee applies.
 

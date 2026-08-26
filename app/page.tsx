@@ -103,7 +103,7 @@ export default function Home() {
               <SectionHeading
                 variant="editorial"
                 title="Competitive Rates"
-                subtitle="Grow your money with our savings and CD products. Rates current as of March 2026."
+                subtitle="Grow your money with our savings and CD products. Rates current as of August 2026."
               />
               <AnimateOnScroll animation="reveal">
                 <div className="mt-8 p-8 bg-cream rounded-2xl">

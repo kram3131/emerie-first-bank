@@ -78,7 +78,7 @@ A HELOC provides a revolving line of credit secured by the borrower's primary re
 
 Credit lines range from $10,000 to $250,000. The maximum combined loan-to-value ratio is 80%. The draw period is 10 years, followed by a 20-year repayment period. During the draw period, minimum payments are interest only. During the repayment period, payments include principal and interest.
 
-The current variable rate is Prime Rate plus 0.50%, with a floor of 5.50% APR and a ceiling of 18.00% APR. As of March 2026, the Prime Rate is 7.50%, making the current HELOC rate 8.00% APR. The rate adjusts monthly based on changes to the Prime Rate as published in the Wall Street Journal.
+The current variable rate is Prime Rate plus 0.50%, with a floor of 5.50% APR and a ceiling of 18.00% APR. As of August 2026, the Prime Rate is 7.50%, making the current HELOC rate 8.00% APR. The rate adjusts monthly based on changes to the Prime Rate as published in the Wall Street Journal.
 
 There is a $75 annual fee, waived in the first year. Closing costs are similar to the home equity loan. Borrowers can convert a portion of the outstanding balance to a fixed rate at any time through the rate lock option, with a $100 rate lock fee.
 

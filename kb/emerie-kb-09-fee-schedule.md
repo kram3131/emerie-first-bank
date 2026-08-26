@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a consolidated reference of fees charged by Emerie First Bank across all account types and services. All fees are subject to change with 30 days advance notice to the customer. Fees are current as of March 2026.
+This is a consolidated reference of fees charged by Emerie First Bank across all account types and services. All fees are subject to change with 30 days advance notice to the customer. Fees are current as of August 2026.
 
 ## Account Maintenance Fees
 
@@ -50,7 +50,7 @@ International incoming: $15.00.
 
 ## Check and Paper Item Fees
 
-Cashiers check: $8.00 each. Free for Premium Checking (unlimited) and Essentials Checking (up to 3 per month).
+Cashiers check: $8.00 each. Free for Basic Checking (1 per month), Essentials Checking (up to 3 per month), and Premium Checking (unlimited).
 Personal check printing (standard, box of 100): $22.00. Duplicate checks: $28.00.
 Business check printing (standard, box of 250): $45.00.
 Counter checks (temporary, per sheet of 3): $2.00.

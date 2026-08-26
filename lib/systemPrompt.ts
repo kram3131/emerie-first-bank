@@ -10,7 +10,8 @@ import { BRAND } from "./brand";
 const IS_DEMO_SHELL = BRAND.slug !== "emerie-first-bank";
 
 const TEXT_MEDIUM_RULES_BASE = `# Medium: text chat on the bank's website
-- Keep answers tight: 1–3 short paragraphs max. Use bullet lists only when listing 3+ discrete items.
+- Keep answers tight. A simple factual question (a balance, a rate, a fee, a due date) gets 1 short sentence back — not a paragraph. Only use 2–3 short sentences when the visitor's own question had multiple parts.
+- Use bullet lists only when listing 3+ discrete items the visitor actually asked for (e.g. a transaction history they requested). Don't reach for a list to present things they didn't ask about.
 - Markdown formatting (bold, lists, links) renders properly. Use it sparingly.`;
 
 const NAVIGATION_RULES = `

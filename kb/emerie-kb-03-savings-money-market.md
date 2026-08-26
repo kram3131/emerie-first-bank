@@ -48,7 +48,7 @@ Interest is compounded daily and credited monthly. The minimum opening deposit i
 
 Emerie First Bank offers fixed-rate CDs with terms ranging from 3 months to 60 months. The minimum deposit for all CDs is $1,000. Interest can be paid monthly to a linked account or compounded and added to the CD balance at maturity.
 
-Current CD rates (as of March 2026):
+Current CD rates (as of August 2026):
 - 3-month CD: 4.50% APY
 - 6-month CD: 4.60% APY
 - 12-month CD: 4.40% APY
